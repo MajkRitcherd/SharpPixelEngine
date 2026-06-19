@@ -86,7 +86,7 @@ namespace SharpPixelEngine.Core
 
             // Load image to VRAM as a Texture2D and immediately discard the RAM image
             var screenTexture = Raylib.LoadTextureFromImage(screenImage);
-            Raylib.UnloadTexture(screenTexture);
+            Raylib.UnloadImage(screenImage);
 
             // Define rectangles for scaling (Logical - Physical)
             var sourceRectangle = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
