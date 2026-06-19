@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+using Raylib_cs;
 
 namespace SharpPixelEngine.Core
 {
@@ -57,6 +59,66 @@ namespace SharpPixelEngine.Core
             PixelBuffer = new uint[PixelCount];
 
             Clear(0xFF000000);
+        }
+
+        /// <summary>
+        /// Starts the engine, open the window, and begin the game loop.
+        /// </summary>
+        /// <param name="windowWidth">Physical window width in pixels.</param>
+        /// <param name="windowHeight">Physical window height in pixels.</param>
+        /// <param name="title">Window title.</param>
+        public void Start(int windowWidth, int windowHeight, string title)
+        {
+            if (windowWidth <= 0 || windowHeight <= 0)
+                throw new ArgumentException("Window dimensions must be greater than 0.");
+
+            if (PixelBuffer.Length == 0)
+                throw new InvalidOperationException("Construct() must be called after Start() method.");
+
+            // Physical window
+            Raylib.InitWindow(windowWidth, windowHeight, title);
+
+            // Create an empty image matching logical resolution (specidied in the Construct() method)
+            var screenImage = Raylib.GenImageColor(ScreenWidth, ScreenHeight, Color.Black);
+
+            // Force the format to match our 32-bit uint array (R8 G8 B8 A8)
+            Raylib.ImageFormat(ref screenImage, PixelFormat.UncompressedR8G8B8A8);
+
+            // Load image to VRAM as a Texture2D and immediately discard the RAM image
+            var screenTexture = Raylib.LoadTextureFromImage(screenImage);
+            Raylib.UnloadTexture(screenTexture);
+
+            // Define rectangles for scaling (Logical - Physical)
+            var sourceRectangle = new Rectangle(0, 0, ScreenWidth, ScreenHeight);
+            var destinationRectangle = new Rectangle(0, 0, windowWidth, windowHeight);
+            var origin = new Vector2(0, 0);
+
+            // User initialization logic
+            OnUserCreate();
+
+            // Main game loop
+            while (!Raylib.WindowShouldClose())
+            {
+                // Elapsed time since last frame
+                float deltaTime = Raylib.GetFrameTime();
+
+                OnUserUpdate(deltaTime);
+
+                // Raylib-cs handles uint[] natively via Span under the hood.
+                // Single, extremely fast memory copy over the PCIe bus.
+                Raylib.UpdateTexture(screenTexture, PixelBuffer);
+
+                Raylib.BeginDrawing();
+
+                // Draw the texture scaled to the window size
+                Raylib.DrawTexturePro(screenTexture, sourceRectangle, destinationRectangle, origin, 0.0f, Color.White);
+
+                Raylib.EndDrawing();
+            }
+
+            // Cleanup
+            Raylib.UnloadTexture(screenTexture);
+            Raylib.CloseWindow();
         }
 
         #region Game Lifecycle
