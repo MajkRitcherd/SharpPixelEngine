@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SharpPixelEngine.Core/SharpPixelEngine.Core.csproj" />
+    <Project Path="src/SharpPixelEngine.Sandbox/SharpPixelEngine.Sandbox.csproj" />
+  </Folder>
+</Solution>
