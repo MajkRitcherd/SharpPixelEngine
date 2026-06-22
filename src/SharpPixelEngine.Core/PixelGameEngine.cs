@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using Raylib_cs;
+using SharpPixelEngine.Core.Graphics;
 
 namespace SharpPixelEngine.Core
 {
@@ -120,6 +121,30 @@ namespace SharpPixelEngine.Core
             Raylib.UnloadTexture(screenTexture);
             Raylib.CloseWindow();
         }
+
+        #region Drawing API
+
+        /// <summary>
+        /// Draws a single pixel at the specified 2D coordinates.
+        /// Includes strict clipping to safely ignore off-screen drawing attempts
+        /// and prevent IndexOutOfRangeException.
+        /// </summary>
+        /// <param name="x">The X coordinate on the logical canvas.</param>
+        /// <param name="y">The Y coordinate on the logical canvas.</param>
+        /// <param name="color">The pixel color to draw.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Draw(int x, int y, PixelColor color)
+        {
+            // Strict clipping
+            if (x >= 0 && x < ScreenWidth && y >= 0 && y < ScreenHeight)
+            {
+                // 2D to 1D mapping
+                // Formula: index = y * width + x
+                PixelBuffer[y * ScreenWidth + x] = color;
+            }
+        }
+
+        #endregion Drawing API
 
         #region Game Lifecycle
 
